@@ -1,0 +1,32 @@
+[package]
+name = "bevy_xr_app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { git = "https://github.com/kcking/bevy", branch = "xr", default-features = false, features = [
+    "openxr_simulator",
+    "xr",
+    "bevy_openxr",
+    "winit_loop",
+
+    "bevy_gilrs",
+    "render",
+    "png",
+    "bevy_asset",
+    "trace",
+] }
+bevy_editor_pls = { git = "https://github.com/kcking/bevy_editor_pls" }
+
+[features]
+default = ["editor"]
+editor = []
+
+
+[patch.'crates-io']
+# override bevy dependencies of other crates like bevy_editor_pls to use the xr
+# fork
+bevy = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_render = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_ecs = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_app = { git = "https://github.com/kcking/bevy", branch = "xr" }
