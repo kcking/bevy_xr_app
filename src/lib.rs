@@ -3,6 +3,7 @@ use bevy::{
     prelude::*,
     xr::{XrSessionMode, XrSystem},
 };
+#[cfg(feature = "editor")]
 use bevy_editor_pls::EditorPlugin;
 
 pub fn game_main() {

@@ -3,12 +3,20 @@ name = "bevy_xr_app"
 version = "0.1.0"
 edition = "2021"
 
+# Quest build is specified as an example because it must use crate-type =
+# cdylib, and a crate can only have 1 lib.
+[[example]]
+name = "android"
+crate-type = ["cdylib"]
+
 [dependencies]
 bevy = { git = "https://github.com/kcking/bevy", branch = "xr", default-features = false, features = [
-    "openxr_simulator",
+    # disable these features when building for quest
+    # "openxr_simulator",
+    # "winit_loop",
+
     "xr",
     "bevy_openxr",
-    "winit_loop",
 
     "bevy_gilrs",
     "render",
@@ -16,11 +24,15 @@ bevy = { git = "https://github.com/kcking/bevy", branch = "xr", default-features
     "bevy_asset",
     "trace",
 ] }
-bevy_editor_pls = { git = "https://github.com/kcking/bevy_editor_pls" }
+bevy_editor_pls = { git = "https://github.com/kcking/bevy_editor_pls", optional = true }
 
 [features]
 default = ["editor"]
-editor = []
+editor = ["bevy_editor_pls"]
+
+# Optimize dependencies in debug build for acceptable performance.
+[profile.dev.package."*"]
+opt-level = 3
 
 
 [patch.'crates-io']
@@ -30,3 +42,37 @@ bevy = { git = "https://github.com/kcking/bevy", branch = "xr" }
 bevy_render = { git = "https://github.com/kcking/bevy", branch = "xr" }
 bevy_ecs = { git = "https://github.com/kcking/bevy", branch = "xr" }
 bevy_app = { git = "https://github.com/kcking/bevy", branch = "xr" }
+
+[package.metadata.android]
+apk_label = "Bevy XR Example"
+package = "com.example.bevyxr"
+assets = "assets"
+res = "assets/android-res"
+icon = "@mipmap/ic_launcher"
+build_targets = ["aarch64-linux-android"]
+runtime_libs = "libs"
+
+[package.metadata.android.sdk]
+min_sdk_version = 29
+target_sdk_version = 29
+
+[package.metadata.android.application]
+
+[[package.metadata.android.application.meta_data]]
+name = "com.samsung.android.vr.application.mode"
+value = "vr_only"
+
+[package.metadata.android.application.activity]
+theme = "@android:style/Theme.Black.NoTitleBar.Fullscreen"
+config_changes = "density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode"
+launch_mode = "singleTask"
+orientation = "landscape"
+resizeable_activity = false
+
+[[package.metadata.android.application.activity.intent_filter]]
+actions = ["android.intent.action.MAIN"]
+categories = [
+    "com.oculus.intent.category.VR",
+    "android.intent.category.LAUNCHER",
+    "android.intent.category.INFO",
+]

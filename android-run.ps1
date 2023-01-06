@@ -1,0 +1,1 @@
+cargo apk run --example android --no-default-features
