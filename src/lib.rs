@@ -52,7 +52,7 @@ fn startup(
 
     c.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
-        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+        material: materials.add(Color::rgb(0.4, 0.5, 0.3).into()),
         ..Default::default()
     });
     // cube

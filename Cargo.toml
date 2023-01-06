@@ -11,10 +11,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 bevy = { git = "https://github.com/kcking/bevy", branch = "xr", default-features = false, features = [
-    # disable these features when building for quest
-    # "openxr_simulator",
-    # "winit_loop",
-
     "xr",
     "bevy_openxr",
 
@@ -27,8 +23,10 @@ bevy = { git = "https://github.com/kcking/bevy", branch = "xr", default-features
 bevy_editor_pls = { git = "https://github.com/kcking/bevy_editor_pls", optional = true }
 
 [features]
-default = ["editor"]
+default = ["editor", "simulator"]
 editor = ["bevy_editor_pls"]
+# Disable this feature when running on a PCVR headset
+simulator = ["bevy/winit_loop", "bevy/openxr_simulator"]
 
 # Optimize dependencies in debug build for acceptable performance.
 [profile.dev.package."*"]
