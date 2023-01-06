@@ -18,6 +18,7 @@ pub fn game_main() {
     app.add_startup_system(startup).run();
 }
 
+#[cfg(all(feature = "editor", not(target_os = "android")))]
 fn editor_startup(mut c: Commands) {
     c.spawn(Camera3dBundle {
         transform: Transform::from_xyz(0.0, 6., 12.0).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
