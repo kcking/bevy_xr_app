@@ -6,6 +6,12 @@
 
 `bevy_xr_app` is tested on both MacOS and Windows, including the built-in OpenXR simulator. Linux should work but has undergone less testing.
 
+## Simulator Demo
+
+[Simulator Demo](https://user-images.githubusercontent.com/1348691/211132148-c18f81e8-6d03-4a90-95af-b16b33b54020.mp4)
+
+
+
 ## Compatibility Matrix
 
 |         | Device | PCVR | Quest | Simulator |
