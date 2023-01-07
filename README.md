@@ -10,8 +10,6 @@
 
 [Simulator Demo](https://user-images.githubusercontent.com/1348691/211132148-c18f81e8-6d03-4a90-95af-b16b33b54020.mp4)
 
-
-
 ## Compatibility Matrix
 
 |         | Device | PCVR | Quest | Simulator |
