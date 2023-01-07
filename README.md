@@ -1,6 +1,6 @@
 # bevy_xr_app
 
-> Starter Bevy OpenXR App
+> Starter [Bevy](https://bevyengine.org) OpenXR App
 
 `bevy_xr_app` is a ready-to-go starter template for using OpenXR with Bevy. It includes basic _scene editor_ support (thanks to `bevy_editor_pls`). It also includes an OpenXR simulator with WASD + Mouse input so you can develop XR applications without putting on a headset.
 
