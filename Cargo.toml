@@ -40,6 +40,18 @@ bevy = { git = "https://github.com/kcking/bevy", branch = "xr" }
 bevy_render = { git = "https://github.com/kcking/bevy", branch = "xr" }
 bevy_ecs = { git = "https://github.com/kcking/bevy", branch = "xr" }
 bevy_app = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_asset = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_core = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_hierarchy = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_log = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_math = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_reflect = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_utils = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_core_pipeline = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_pbr = { git = "https://github.com/kcking/bevy", branch = "xr" }
+
+[patch."https://github.com/aevyrie/bevy_mod_picking"]
+bevy_mod_picking = { git = "https://github.com/kcking/bevy_mod_picking" }
 
 [package.metadata.android]
 apk_label = "Bevy XR Example"

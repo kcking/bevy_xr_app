@@ -8,6 +8,12 @@ use bevy_editor_pls::EditorPlugin;
 
 pub fn game_main() {
     let mut app = App::new();
+    #[cfg(feature = "editor")]
+    {
+        let mut wgpu_settings = bevy::render::settings::WgpuSettings::default();
+        wgpu_settings.features |= bevy::render::settings::WgpuFeatures::POLYGON_MODE_LINE;
+        app.insert_resource(wgpu_settings);
+    }
     app.add_plugins(DefaultPlugins);
     #[cfg(all(feature = "editor", not(target_os = "android")))]
     {
