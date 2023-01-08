@@ -93,7 +93,7 @@ fn load_start_scene(mut c: Commands, asset_server: Res<AssetServer>) {
     //  NOTE: use DynamicHookedSceneBundle for .ron scenes and HookedSceneBundle for .gltf scenes.
     c.spawn(HookedSceneBundle {
         scene: SceneBundle {
-            scene: asset_server.load("scenes/untitled.gltf#Scene0"),
+            scene: asset_server.load("scenes/start.gltf#Scene0"),
             ..default()
         },
         hook: SceneHook::new(|entity, cmds| {
@@ -123,6 +123,8 @@ fn load_start_scene(mut c: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
+//  Fills in Mesh and Material components for entity names registered in
+//  `SceneMaterialMeshes`
 fn populate_mesh(
     mut c: Commands,
     q: Query<(Entity, &Name), With<NeedsMesh>>,
