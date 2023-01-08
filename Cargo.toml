@@ -20,6 +20,7 @@ bevy = { git = "https://github.com/kcking/bevy", branch = "xr", default-features
     "bevy_asset",
     "trace",
 ] }
+bevy-scene-hook = "5.1.2"
 bevy_editor_pls = { git = "https://github.com/kcking/bevy_editor_pls", optional = true }
 
 [features]

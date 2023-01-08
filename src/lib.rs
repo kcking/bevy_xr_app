@@ -1,10 +1,12 @@
 use bevy::{
     app::AppExit,
     prelude::*,
+    utils::HashMap,
     xr::{XrSessionMode, XrSystem},
 };
 #[cfg(feature = "editor")]
 use bevy_editor_pls::EditorPlugin;
+use bevy_scene_hook::{HookedSceneBundle, SceneHook};
 
 pub fn game_main() {
     let mut app = App::new();
@@ -21,7 +23,9 @@ pub fn game_main() {
         app.add_plugin(EditorPlugin);
         app.add_startup_system(editor_startup);
     }
-    app.add_startup_system(startup).run();
+    app.add_startup_system(startup)
+        .add_startup_system(load_start_scene)
+        .run();
 }
 
 #[cfg(all(feature = "editor", not(target_os = "android")))]
@@ -30,6 +34,31 @@ fn editor_startup(mut c: Commands) {
         transform: Transform::from_xyz(0.0, 6., 12.0).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
         ..default()
     });
+}
+
+struct MaterialMesh {
+    material: Handle<StandardMaterial>,
+    mesh: Handle<Mesh>,
+}
+
+#[derive(Resource, Default)]
+struct SceneMaterialMeshes {
+    material_mesh_by_name: HashMap<String, MaterialMesh>,
+}
+
+fn init_material_meshes(
+    mut c: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut scene_material_meshes: ResMut<SceneMaterialMeshes>,
+) {
+    scene_material_meshes.material_mesh_by_name.insert(
+        "Cube".into(),
+        MaterialMesh {
+            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        },
+    );
 }
 
 fn startup(
@@ -70,4 +99,26 @@ fn startup(
     });
 
     println!("startup done");
+}
+
+fn load_start_scene(mut c: Commands, asset_server: Res<AssetServer>, meshes: ResMut<Assets<Mesh>>) {
+    c.spawn(DynamicSceneBundle {
+        scene: asset_server.load("scenes/start.scn.ron"),
+        ..Default::default()
+    });
+    let meshes = meshes.clone();
+    c.spawn(HookedSceneBundle {
+        scene: SceneBundle {
+            scene: asset_server.load("scene.glb#Scene0"),
+            ..default()
+        },
+        hook: SceneHook::new(
+            |entity, cmds| match entity.get::<Name>().map(|t| t.as_str()) {
+                Some("Cube") => {
+                    cmds.insert(meshes.add(Mesh::from(shape::Cube { size: 1.0 })));
+                }
+                _ => {}
+            },
+        ),
+    });
 }
