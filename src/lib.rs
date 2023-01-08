@@ -6,7 +6,7 @@ use bevy::{
 };
 #[cfg(feature = "editor")]
 use bevy_editor_pls::EditorPlugin;
-use bevy_scene_hook::{HookedSceneBundle, SceneHook};
+use bevy_scene_hook::{HookedDynamicSceneBundle, SceneHook};
 
 pub fn game_main() {
     let mut app = App::new();
@@ -23,6 +23,13 @@ pub fn game_main() {
         app.add_plugin(EditorPlugin);
         app.add_startup_system(editor_startup);
     }
+    //  Scene management
+    {
+        app.add_plugin(bevy_scene_hook::HookPlugin)
+            .init_resource::<SceneMaterialMeshes>()
+            .add_startup_system(init_material_meshes)
+            .add_system(populate_mesh)
+    };
     app.add_startup_system(startup)
         .add_startup_system(load_start_scene)
         .run();
@@ -36,6 +43,7 @@ fn editor_startup(mut c: Commands) {
     });
 }
 
+#[derive(Bundle, Clone)]
 struct MaterialMesh {
     material: Handle<StandardMaterial>,
     mesh: Handle<Mesh>,
@@ -47,7 +55,6 @@ struct SceneMaterialMeshes {
 }
 
 fn init_material_meshes(
-    mut c: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut scene_material_meshes: ResMut<SceneMaterialMeshes>,
@@ -59,15 +66,16 @@ fn init_material_meshes(
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
         },
     );
+    scene_material_meshes.material_mesh_by_name.insert(
+        "Plane".into(),
+        MaterialMesh {
+            material: materials.add(Color::rgb(0.4, 0.5, 0.3).into()),
+            mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
+        },
+    );
 }
 
-fn startup(
-    mut c: Commands,
-    mut xr_system: ResMut<XrSystem>,
-    mut app_exit_events: EventWriter<AppExit>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+fn startup(mut xr_system: ResMut<XrSystem>, mut app_exit_events: EventWriter<AppExit>) {
     if xr_system.is_session_mode_supported(XrSessionMode::ImmersiveVR) {
         xr_system.request_session_mode(XrSessionMode::ImmersiveVR);
     } else {
@@ -75,50 +83,39 @@ fn startup(
         app_exit_events.send(AppExit)
     }
 
-    c.spawn(PointLightBundle {
-        point_light: PointLight {
-            intensity: 1500.0,
-            shadows_enabled: true,
-            ..Default::default()
-        },
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..Default::default()
-    });
-
-    c.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
-        material: materials.add(Color::rgb(0.4, 0.5, 0.3).into()),
-        ..Default::default()
-    });
-    // cube
-    c.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-        transform: Transform::from_xyz(0.0, 0.5, 0.0),
-        ..Default::default()
-    });
-
     println!("startup done");
 }
 
-fn load_start_scene(mut c: Commands, asset_server: Res<AssetServer>, meshes: ResMut<Assets<Mesh>>) {
-    c.spawn(DynamicSceneBundle {
-        scene: asset_server.load("scenes/start.scn.ron"),
-        ..Default::default()
-    });
-    let meshes = meshes.clone();
-    c.spawn(HookedSceneBundle {
-        scene: SceneBundle {
-            scene: asset_server.load("scene.glb#Scene0"),
+#[derive(Component)]
+struct NeedsMesh;
+
+fn load_start_scene(mut c: Commands, asset_server: Res<AssetServer>) {
+    c.spawn(HookedDynamicSceneBundle {
+        scene: DynamicSceneBundle {
+            scene: asset_server.load("scenes/start.scn.ron"),
             ..default()
         },
         hook: SceneHook::new(
             |entity, cmds| match entity.get::<Name>().map(|t| t.as_str()) {
-                Some("Cube") => {
-                    cmds.insert(meshes.add(Mesh::from(shape::Cube { size: 1.0 })));
+                Some("Cube" | "Plane") => {
+                    cmds.insert(NeedsMesh);
                 }
                 _ => {}
             },
         ),
     });
+}
+
+fn populate_mesh(
+    mut c: Commands,
+    q: Query<(Entity, &Name), With<NeedsMesh>>,
+    meshes: Res<SceneMaterialMeshes>,
+) {
+    for (ent, name) in q.iter() {
+        let mut ent = c.entity(ent);
+        ent.remove::<NeedsMesh>();
+        if let Some(mesh_mat) = meshes.material_mesh_by_name.get(name.as_str()) {
+            ent.insert(mesh_mat.clone());
+        }
+    }
 }
