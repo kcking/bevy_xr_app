@@ -6,7 +6,7 @@ use bevy::{
 };
 #[cfg(feature = "editor")]
 use bevy_editor_pls::EditorPlugin;
-use bevy_scene_hook::{HookedDynamicSceneBundle, SceneHook};
+use bevy_scene_hook::{HookedDynamicSceneBundle, HookedSceneBundle, SceneHook};
 
 pub fn game_main() {
     let mut app = App::new();
@@ -60,14 +60,14 @@ fn init_material_meshes(
     mut scene_material_meshes: ResMut<SceneMaterialMeshes>,
 ) {
     scene_material_meshes.material_mesh_by_name.insert(
-        "Cube".into(),
+        "BevyCube".into(),
         MaterialMesh {
             material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
         },
     );
     scene_material_meshes.material_mesh_by_name.insert(
-        "Plane".into(),
+        "BevyPlane".into(),
         MaterialMesh {
             material: materials.add(Color::rgb(0.4, 0.5, 0.3).into()),
             mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
@@ -90,19 +90,36 @@ fn startup(mut xr_system: ResMut<XrSystem>, mut app_exit_events: EventWriter<App
 struct NeedsMesh;
 
 fn load_start_scene(mut c: Commands, asset_server: Res<AssetServer>) {
-    c.spawn(HookedDynamicSceneBundle {
-        scene: DynamicSceneBundle {
-            scene: asset_server.load("scenes/start.scn.ron"),
+    //  NOTE: use DynamicHookedSceneBundle for .ron scenes and HookedSceneBundle for .gltf scenes.
+    c.spawn(HookedSceneBundle {
+        scene: SceneBundle {
+            scene: asset_server.load("scenes/untitled.gltf#Scene0"),
             ..default()
         },
-        hook: SceneHook::new(
-            |entity, cmds| match entity.get::<Name>().map(|t| t.as_str()) {
+        hook: SceneHook::new(|entity, cmds| {
+            match entity.get::<Name>().map(|t| t.as_str()) {
                 Some("Cube" | "Plane") => {
                     cmds.insert(NeedsMesh);
                 }
                 _ => {}
-            },
-        ),
+            };
+            //  Fix Blender light intensities and enable shadows
+            if let Some(light) = entity.get::<SpotLight>() {
+                cmds.insert(SpotLight {
+                    intensity: light.intensity / 200.,
+                    shadows_enabled: true,
+                    ..light.clone()
+                });
+            }
+            if let Some(light) = entity.get::<PointLight>() {
+                cmds.insert(PointLight {
+                    intensity: light.intensity / 200.,
+                    shadows_enabled: true,
+                    ..light.clone()
+                });
+            }
+            // entity.get::<Light>();
+        }),
     });
 }
 

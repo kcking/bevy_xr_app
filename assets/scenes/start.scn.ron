@@ -112,7 +112,7 @@
         ),
         "bevy_core::name::Name": (
           hash: 1433693917323531042,
-          name: "Plane",
+          name: "BevyPlane",
         ),
         "bevy_asset::handle::Handle<bevy_render::mesh::mesh::Mesh>": (
           id: Id("8ecbac0f-f545-4473-ad43-e1f4243af51e", 13279439286618454261),
@@ -182,7 +182,7 @@
         ),
         "bevy_core::name::Name": (
           hash: 8378947908065008808,
-          name: "Cube",
+          name: "BevyCube",
         ),
         "bevy_asset::handle::Handle<bevy_render::mesh::mesh::Mesh>": (
           id: Id("8ecbac0f-f545-4473-ad43-e1f4243af51e", 8052455476645278057),
