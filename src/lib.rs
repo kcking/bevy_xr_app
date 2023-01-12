@@ -1,3 +1,6 @@
+mod controllers;
+mod scenes;
+
 use bevy::{
     app::AppExit,
     prelude::*,
@@ -6,7 +9,7 @@ use bevy::{
 };
 #[cfg(feature = "editor")]
 use bevy_editor_pls::EditorPlugin;
-use bevy_scene_hook::{HookedDynamicSceneBundle, HookedSceneBundle, SceneHook};
+use bevy_scene_hook::{HookedSceneBundle, SceneHook};
 
 pub fn game_main() {
     let mut app = App::new();
@@ -23,14 +26,8 @@ pub fn game_main() {
         app.add_plugin(EditorPlugin);
         app.add_startup_system(editor_startup);
     }
-    //  Scene management
-    {
-        app.add_plugin(bevy_scene_hook::HookPlugin)
-            .init_resource::<SceneMaterialMeshes>()
-            .add_startup_system(init_material_meshes)
-            .add_system(populate_mesh)
-    };
-    app.add_startup_system(startup)
+    app.add_plugin(scenes::SceneTweaksPlugin)
+        .add_startup_system(startup)
         .add_startup_system(load_start_scene)
         .run();
 }
@@ -41,38 +38,6 @@ fn editor_startup(mut c: Commands) {
         transform: Transform::from_xyz(0.0, 6., 12.0).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
         ..default()
     });
-}
-
-#[derive(Bundle, Clone)]
-struct MaterialMesh {
-    material: Handle<StandardMaterial>,
-    mesh: Handle<Mesh>,
-}
-
-#[derive(Resource, Default)]
-struct SceneMaterialMeshes {
-    material_mesh_by_name: HashMap<String, MaterialMesh>,
-}
-
-fn init_material_meshes(
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut scene_material_meshes: ResMut<SceneMaterialMeshes>,
-) {
-    scene_material_meshes.material_mesh_by_name.insert(
-        "BevyCube".into(),
-        MaterialMesh {
-            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-        },
-    );
-    scene_material_meshes.material_mesh_by_name.insert(
-        "BevyPlane".into(),
-        MaterialMesh {
-            material: materials.add(Color::rgb(0.4, 0.5, 0.3).into()),
-            mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
-        },
-    );
 }
 
 fn startup(mut xr_system: ResMut<XrSystem>, mut app_exit_events: EventWriter<AppExit>) {
@@ -118,23 +83,6 @@ fn load_start_scene(mut c: Commands, asset_server: Res<AssetServer>) {
                     ..light.clone()
                 });
             }
-            // entity.get::<Light>();
         }),
     });
-}
-
-//  Fills in Mesh and Material components for entity names registered in
-//  `SceneMaterialMeshes`
-fn populate_mesh(
-    mut c: Commands,
-    q: Query<(Entity, &Name), With<NeedsMesh>>,
-    meshes: Res<SceneMaterialMeshes>,
-) {
-    for (ent, name) in q.iter() {
-        let mut ent = c.entity(ent);
-        ent.remove::<NeedsMesh>();
-        if let Some(mesh_mat) = meshes.material_mesh_by_name.get(name.as_str()) {
-            ent.insert(mesh_mat.clone());
-        }
-    }
 }
